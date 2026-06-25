@@ -255,6 +255,21 @@ tr:hover:not(.total-row){background:#F5F8FF}
     </div>
   </div>
 
+  <div class="filter-group" id="fg-qtr">
+    <button class="ms-btn" id="ms-btn-qtr" onclick="togglePanel('qtr',event)">
+      <span class="ms-lbl" id="ms-lbl-qtr">Quarter</span>
+      <span class="ms-arrow">▼</span>
+    </button>
+    <div class="ms-panel" id="ms-panel-qtr">
+      <div class="ms-actions">
+        <button onclick="selectAll('qtr')">Select All</button>
+        <button onclick="clearAll('qtr')">Clear</button>
+      </div>
+      <div class="ms-search"><input type="text" placeholder="Search…" oninput="filterSearch('qtr',this.value)"></div>
+      <div class="ms-items" id="ms-items-qtr"></div>
+    </div>
+  </div>
+
   <button class="btn-reset" onclick="resetFilters()">✕ Reset All</button>
 </div>
 
@@ -359,9 +374,9 @@ const IDX_SHORT = {
 // STATE & UTILS
 // ══════════════════════════════════════════════════════════════════════
 // selected = null means "all"; selected = Set means those specific values
-const SEL = { segment: null, ou: null, stage: null };
-const ALL_ITEMS = { segment: SEGMENTS, ou: OUS, stage: STAGES };
-const LABELS    = { segment: 'CSM Segment', ou: 'OU', stage: 'Opp Stage' };
+const SEL = { segment: null, ou: null, stage: null, qtr: null };
+const ALL_ITEMS = { segment: SEGMENTS, ou: OUS, stage: STAGES, qtr: ALL_QTRS };
+const LABELS    = { segment: 'CSM Segment', ou: 'OU', stage: 'Opp Stage', qtr: 'Quarter' };
 let mainChart = null;
 
 const fmtM = v => '$' + (v/1e6).toFixed(2) + 'M';
@@ -426,7 +441,7 @@ function togglePanel(key, e) {
 }
 
 function closeAllPanels() {
-  ['segment','ou','stage'].forEach(k => {
+  ['segment','ou','stage','qtr'].forEach(k => {
     document.getElementById('ms-panel-'+k).classList.remove('open');
     document.getElementById('ms-btn-'+k).classList.remove('open');
   });
@@ -451,17 +466,17 @@ function filterSearch(key, q) {
 }
 
 function populateFilters() {
-  ['segment','ou','stage'].forEach(k => buildItems(k));
+  ['segment','ou','stage','qtr'].forEach(k => buildItems(k));
 }
 
 function resetFilters() {
-  ['segment','ou','stage'].forEach(k => { SEL[k] = null; buildItems(k); updateBtn(k); });
+  ['segment','ou','stage','qtr'].forEach(k => { SEL[k] = null; buildItems(k); updateBtn(k); });
   closeAllPanels();
   renderAll(); updateBadge();
 }
 
 function updateBadge() {
-  const n = ['segment','ou','stage'].filter(k => SEL[k] !== null && SEL[k].size < ALL_ITEMS[k].length).length;
+  const n = ['segment','ou','stage','qtr'].filter(k => SEL[k] !== null && SEL[k].size < ALL_ITEMS[k].length).length;
   const b = document.getElementById('badge-count');
   b.textContent = n; b.classList.toggle('hidden', n===0);
 }
@@ -487,6 +502,7 @@ function getActiveOppMap() {
     if (SEL.segment && !SEL.segment.has(m.segment)) continue;
     if (SEL.ou      && !SEL.ou.has(m.ou))           continue;
     if (SEL.stage   && !SEL.stage.has(m.stage))     continue;
+    if (SEL.qtr     && !SEL.qtr.has(m.qtr))         continue;
     res[k] = m;
   }
   return res;
